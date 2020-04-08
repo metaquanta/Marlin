@@ -184,7 +184,7 @@
 #define TEMP_SENSOR_5 0
 #define TEMP_SENSOR_6 0
 #define TEMP_SENSOR_7 0
-#define TEMP_SENSOR_BED 1000 // ~270kOhm my bed is not in here
+#define TEMP_SENSOR_BED 5 // Anet A6/8 bed
 #define TEMP_SENSOR_PROBE 0
 #define TEMP_SENSOR_CHAMBER 0
 
@@ -307,9 +307,15 @@
   //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
   
   // MM200
-  #define DEFAULT_bedKp 14.00
-  #define DEFAULT_bedKi 0.9
-  #define DEFAULT_bedKd 120.4
+  //#define DEFAULT_bedKp 14.00
+  //#define DEFAULT_bedKi 0.9
+  //#define DEFAULT_bedKd 120.4
+
+  // ANET A8 (new bed!)
+  // original Bed + 0.3mm Heat conducting into 4mm borosilicate (PID-Autotune: M303 E-1 S60 C5):
+  #define DEFAULT_bedKp 295.00
+  #define DEFAULT_bedKi 35.65
+  #define DEFAULT_bedKd 610.21
 
   //120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   //from pidautotune
