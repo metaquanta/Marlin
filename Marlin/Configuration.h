@@ -254,9 +254,14 @@
   // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 
   // MM200
-  #define DEFAULT_Kp 20.0
-  #define DEFAULT_Ki 2.02
-  #define DEFAULT_Kd 100
+  //#define DEFAULT_Kp 20.0
+  //#define DEFAULT_Ki 2.02
+  //#define DEFAULT_Kd 100
+
+  // Autotuned (E3Dv6 clone)
+  #define DEFAULT_Kp 27.68
+  #define DEFAULT_Ki 2.17
+  #define DEFAULT_Kd 88.42
 
   // MakerGear
   //#define DEFAULT_Kp 7.0
@@ -313,9 +318,14 @@
 
   // ANET A8 (new bed!)
   // original Bed + 0.3mm Heat conducting into 4mm borosilicate (PID-Autotune: M303 E-1 S60 C5):
-  #define DEFAULT_bedKp 295.00
-  #define DEFAULT_bedKi 35.65
-  #define DEFAULT_bedKd 610.21
+  //#define DEFAULT_bedKp 295.00
+  //#define DEFAULT_bedKi 35.65
+  //#define DEFAULT_bedKd 610.21
+
+  // Autotuned new bed
+  #define DEFAULT_bedKp 190.02
+  #define DEFAULT_bedKi 32.17
+  #define DEFAULT_bedKd 748.16
 
   //120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   //from pidautotune
@@ -622,8 +632,8 @@
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 125 // measured
-#define Y_BED_SIZE 117 // measured
+#define X_BED_SIZE 130 // 120 < X_f < 130
+#define Y_BED_SIZE 200 // 190 < Y_f < 200
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
