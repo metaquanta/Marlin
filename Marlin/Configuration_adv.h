@@ -106,8 +106,8 @@
  * Thermal Protection parameters for the bed are just as above for hotends.
  */
 #if ENABLED(THERMAL_PROTECTION_BED)
-  #define THERMAL_PROTECTION_BED_PERIOD        40 // Seconds
-  #define THERMAL_PROTECTION_BED_HYSTERESIS     4 // Degrees Celsius
+  #define THERMAL_PROTECTION_BED_PERIOD        20 // Seconds
+  #define THERMAL_PROTECTION_BED_HYSTERESIS     2 // Degrees Celsius
 
   /**
    * As described above, except for the bed (M140/M190/M303).
@@ -121,7 +121,7 @@
   // A well-chosen Kc value should add just enough power to melt the increased material volume.
   //#define PID_EXTRUSION_SCALING
   #if ENABLED(PID_EXTRUSION_SCALING)
-    #define DEFAULT_Kc (100) //heating power=Kc*(e_speed)
+    #define DEFAULT_Kc (100) // heating power = Kc * e_speed
     #define LPQ_MAX_LEN 50
   #endif
 
@@ -177,18 +177,28 @@
 #endif
 
 /**
- * Automatic Temperature:
- * The hotend target temperature is calculated by all the buffered lines of gcode.
- * The maximum buffered steps/sec of the extruder motor is called "se".
- * Start autotemp mode with M109 S<mintemp> B<maxtemp> F<factor>
- * The target temperature is set to mintemp+factor*se[steps/sec] and is limited by
- * mintemp and maxtemp. Turn this off by executing M109 without F*
- * Also, if the temperature is set to a value below mintemp, it will not be changed by autotemp.
- * On an Ultimaker, some initial testing worked with M109 S215 B260 F1 in the start.gcode
+ * Automatic Temperature Mode
+ *
+ * Dynamically adjust the hotend target temperature based on planned E moves.
+ *
+ * (Contrast with PID_EXTRUSION_SCALING, which tracks E movement and adjusts PID
+ *  behavior using an additional kC value.)
+ *
+ * Autotemp is calculated by (mintemp + factor * mm_per_sec), capped to maxtemp.
+ *
+ * Enable Autotemp Mode with M104/M109 F<factor> S<mintemp> B<maxtemp>.
+ * Disable by sending M104/M109 with no F parameter (or F0 with AUTOTEMP_PROPORTIONAL).
  */
 #define AUTOTEMP
 #if ENABLED(AUTOTEMP)
-  #define AUTOTEMP_OLDWEIGHT 0.98
+  #define AUTOTEMP_OLDWEIGHT    0.98
+  // Turn on AUTOTEMP on M104/M109 by default using proportions set here
+  //#define AUTOTEMP_PROPORTIONAL
+  #if ENABLED(AUTOTEMP_PROPORTIONAL)
+    #define AUTOTEMP_MIN_P      0 // (°C) Added to the target temperature
+    #define AUTOTEMP_MAX_P      5 // (°C) Added to the target temperature
+    #define AUTOTEMP_FACTOR_P   1 // Apply this F parameter by default (overridden by M104/M109 F)
+  #endif
 #endif
 
 // Extra options for the M114 "Current Position" report
@@ -255,7 +265,6 @@
  *
  * The fan turns on automatically whenever any driver is enabled and turns
  * off (or reduces to idle speed) shortly after drivers are turned off.
- *
  */
 //#define USE_CONTROLLER_FAN
 #if ENABLED(USE_CONTROLLER_FAN)
@@ -369,19 +378,22 @@
 
 // @section homing
 
-// Homing hits each endstop, retracts by these distances, then does a slower bump.
-#define X_HOME_BUMP_MM 5
-#define Y_HOME_BUMP_MM 5
-#define Z_HOME_BUMP_MM 2
-#define HOMING_BUMP_DIVISOR { 2, 2, 4 }  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
-#define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
-//#define HOMING_BACKOFF_MM { 2, 2, 2 }  // (mm) Move away from the endstops after homing
+/**
+ * Homing Procedure
+ * Homing (G28) does an indefinite move towards the endstops to establish
+ * the position of the toolhead relative to the workspace.
+ */
 
-// When G28 is called, this option will make Y home before X
-//#define HOME_Y_BEFORE_X
+//#define SENSORLESS_BACKOFF_MM  { 2, 2 }     // (mm) Backoff from endstops before sensorless homing
 
-// Enable this if X or Y can't home without homing the other axis first.
-//#define CODEPENDENT_XY_HOMING
+#define HOMING_BUMP_MM      { 5, 5, 2 }       // (mm) Backoff from endstops after first bump
+#define HOMING_BUMP_DIVISOR { 2, 2, 4 }       // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+
+//#define HOMING_BACKOFF_POST_MM { 2, 2, 2 }  // (mm) Backoff from endstops after homing
+
+//#define QUICK_HOME                          // If G28 contains XY do a diagonal move first
+//#define HOME_Y_BEFORE_X                     // If G28 contains XY home Y before X
+//#define CODEPENDENT_XY_HOMING               // If X/Y can't home without homing Y/X first
 
 // @section motion
 
@@ -569,8 +581,10 @@
   // Enable this option and set to HIGH if your SD cards are incorrectly detected.
   //#define SD_DETECT_STATE HIGH
 
-  #define SD_FINISHED_STEPPERRELEASE true          // Disable steppers when SD Print is finished
-  #define SD_FINISHED_RELEASECOMMAND "M84 X Y Z E" // You might want to keep the Z enabled so your bed stays in place.
+  #define SD_PROCEDURE_DEPTH 1              // Increase if you need more nested M32 calls
+
+  #define SD_FINISHED_STEPPERRELEASE true   // Disable steppers when SD Print is finished
+  #define SD_FINISHED_RELEASECOMMAND "M84"  // Use "M84XYE" to keep Z enabled so your bed stays in place
 
   // Reverse SD sort to show "more recent" files first, according to the card's FAT.
   // Since the FAT gets out of order with usage, SDCARD_SORT_ALPHA is recommended.
@@ -589,9 +603,6 @@
    * during SD printing. If the recovery file is found at boot time, present
    * an option on the LCD screen to continue the print from the last-known
    * point in the file.
-   *
-   * If the machine reboots when resuming a print you may need to replace or
-   * reformat the SD card. (Bad sectors delay startup triggering the watchdog.)
    */
   //#define POWER_LOSS_RECOVERY
   #if ENABLED(POWER_LOSS_RECOVERY)
@@ -764,7 +775,7 @@
  * If this algorithm produces a higher speed offset than the extruder can handle (compared to E jerk)
  * print acceleration will be reduced during the affected moves to keep within the limit.
  *
- * See http://marlinfw.org/docs/features/lin_advance.html for full instructions.
+ * See https://marlinfw.org/docs/features/lin_advance.html for full instructions.
  * Mention @Sebastianv650 on GitHub to alert the author of any issues.
  */
 //#define LIN_ADVANCE
@@ -1173,7 +1184,8 @@
   #define Y_HYBRID_THRESHOLD     100
   #define Z_HYBRID_THRESHOLD       3
   #define E0_HYBRID_THRESHOLD     30
-  /**
+  
+ /**
    * Beta feature!
    * Create a 50/50 square wave step pulse optimal for stepper drivers.
    */

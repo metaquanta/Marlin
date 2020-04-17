@@ -108,7 +108,7 @@
 #define EXTRUDERS 1
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
-#define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
+#define DEFAULT_NOMINAL_FILAMENT_DIA 3.0
 
 // @section temperature
 
@@ -134,7 +134,7 @@
  *   202 : 200k thermistor - Copymaster 3D
  *     3 : Mendel-parts thermistor (4.7k pullup)
  *     4 : 10k thermistor !! do not use it for a hotend. It gives bad resolution at high temp. !!
- *     5 : 100K thermistor - ATC Semitec 104GT-2/104NT-4-R025H42G (Used in ParCan & J-Head) (4.7k pullup)
+ *     5 : 100K thermistor - ATC Semitec 104GT-2/104NT-4-R025H42G (Used in ParCan, J-Head, and E3D) (4.7k pullup)
  *   501 : 100K Zonestar (Tronxy X3A) Thermistor
  *   512 : 100k RPW-Ultra hotend thermistor (4.7k pullup)
  *     6 : 100k EPCOS - Not as accurate as table 1 (created using a fluke thermocouple) (4.7k pullup)
@@ -143,7 +143,7 @@
  *     8 : 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup)
  *     9 : 100k GE Sensing AL03006-58.2K-97-G1 (4.7k pullup)
  *    10 : 100k RS thermistor 198-961 (4.7k pullup)
- *    11 : 100k beta 3950 1% thermistor (4.7k pullup)
+ *    11 : 100k beta 3950 1% thermistor (Used in Keenovo AC silicone mats and most Wanhao i3 machines) (4.7k pullup)
  *    12 : 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
  *    13 : 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE"
  *    15 : 100k thermistor calibration for JGAurora A5 hotend
@@ -165,7 +165,7 @@
  *    52 : 200k thermistor - ATC Semitec 204GT-2 (1k pullup)
  *    55 : 100k thermistor - ATC Semitec 104GT-2 (Used in ParCan & J-Head) (1k pullup)
  *
- *  1047 : Pt1000 with 4k7 pullup
+ *  1047 : Pt1000 with 4k7 pullup (E3D)
  *  1010 : Pt1000 with 1k pullup (non standard)
  *   147 : Pt100 with 4k7 pullup
  *   110 : Pt100 with 1k pullup (non standard)
@@ -228,7 +228,7 @@
 #define HEATER_5_MAXTEMP 275
 #define HEATER_6_MAXTEMP 275
 #define HEATER_7_MAXTEMP 275
-#define BED_MAXTEMP      120
+#define BED_MAXTEMP      150
 
 //===========================================================================
 //============================= PID Settings ================================
@@ -280,7 +280,7 @@
  * heater. If your configuration is significantly different than this and you don't understand
  * the issues involved, don't use bed PID until someone else verifies that your hardware works.
  */
-#define PIDTEMPBED
+//#define PIDTEMPBED
 
 //#define BED_LIMIT_SWITCHING
 
@@ -381,9 +381,9 @@
 #define X_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
 #define Y_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
 #define Z_MIN_ENDSTOP_INVERTING true // Set to true to invert the logic of the endstop.
-//#define X_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
-//#define Y_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
-//#define Z_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
+#define X_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
+#define Y_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
+#define Z_MAX_ENDSTOP_INVERTING false // Set to true to invert the logic of the endstop.
 
 /**
  * Stepper Drivers
@@ -546,9 +546,9 @@
 
 // Disables axis stepper immediately when it's not being used.
 // WARNING: When motors turn off there is a chance of losing position accuracy!
-//#define DISABLE_X true
-//#define DISABLE_Y true
-//#define DISABLE_Z true
+#define DISABLE_X false
+#define DISABLE_Y false
+#define DISABLE_Z false
 
 
 // @section extruder
@@ -567,6 +567,13 @@
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.
 #define INVERT_E0_DIR false
+#define INVERT_E1_DIR false
+#define INVERT_E2_DIR false
+#define INVERT_E3_DIR false
+#define INVERT_E4_DIR false
+#define INVERT_E5_DIR false
+#define INVERT_E6_DIR false
+#define INVERT_E7_DIR false
 
 // @section homing
 
@@ -597,7 +604,7 @@
 #define Z_MIN_POS 0
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
-#define Z_MAX_POS 120
+#define Z_MAX_POS 200
 
 /**
  * Software Endstops
@@ -623,6 +630,177 @@
   #define MAX_SOFTWARE_ENDSTOP_Y
   #define MAX_SOFTWARE_ENDSTOP_Z
 #endif
+
+//===========================================================================
+//=============================== Bed Leveling ==============================
+//===========================================================================
+// @section calibrate
+
+/**
+ * Choose one of the options below to enable G29 Bed Leveling. The parameters
+ * and behavior of G29 will change depending on your selection.
+ *
+ *  If using a Probe for Z Homing, enable Z_SAFE_HOMING also!
+ *
+ * - AUTO_BED_LEVELING_3POINT
+ *   Probe 3 arbitrary points on the bed (that aren't collinear)
+ *   You specify the XY coordinates of all 3 points.
+ *   The result is a single tilted plane. Best for a flat bed.
+ *
+ * - AUTO_BED_LEVELING_LINEAR
+ *   Probe several points in a grid.
+ *   You specify the rectangle and the density of sample points.
+ *   The result is a single tilted plane. Best for a flat bed.
+ *
+ * - AUTO_BED_LEVELING_BILINEAR
+ *   Probe several points in a grid.
+ *   You specify the rectangle and the density of sample points.
+ *   The result is a mesh, best for large or uneven beds.
+ *
+ * - AUTO_BED_LEVELING_UBL (Unified Bed Leveling)
+ *   A comprehensive bed leveling system combining the features and benefits
+ *   of other systems. UBL also includes integrated Mesh Generation, Mesh
+ *   Validation and Mesh Editing systems.
+ *
+ * - MESH_BED_LEVELING
+ *   Probe a grid manually
+ *   The result is a mesh, suitable for large or uneven beds. (See BILINEAR.)
+ *   For machines without a probe, Mesh Bed Leveling provides a method to perform
+ *   leveling in steps so you can manually adjust the Z height at each grid-point.
+ *   With an LCD controller the process is guided step-by-step.
+ */
+//#define AUTO_BED_LEVELING_3POINT
+//#define AUTO_BED_LEVELING_LINEAR
+//#define AUTO_BED_LEVELING_BILINEAR
+//#define AUTO_BED_LEVELING_UBL
+//#define MESH_BED_LEVELING
+
+/**
+ * Normally G28 leaves leveling disabled on completion. Enable
+ * this option to have G28 restore the prior leveling state.
+ */
+//#define RESTORE_LEVELING_AFTER_G28
+
+/**
+ * Enable detailed logging of G28, G29, M48, etc.
+ * Turn on with the command 'M111 S32'.
+ * NOTE: Requires a lot of PROGMEM!
+ */
+//#define DEBUG_LEVELING_FEATURE
+
+#if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_UBL)
+  // Gradually reduce leveling correction until a set height is reached,
+  // at which point movement will be level to the machine's XY plane.
+  // The height can be set with M420 Z<height>
+  #define ENABLE_LEVELING_FADE_HEIGHT
+
+  // For Cartesian machines, instead of dividing moves on mesh boundaries,
+  // split up moves into short segments like a Delta. This follows the
+  // contours of the bed more closely than edge-to-edge straight moves.
+  #define SEGMENT_LEVELED_MOVES
+  #define LEVELED_SEGMENT_LENGTH 5.0 // (mm) Length of all segments (except the last one)
+
+  /**
+   * Enable the G26 Mesh Validation Pattern tool.
+   */
+  //#define G26_MESH_VALIDATION
+  #if ENABLED(G26_MESH_VALIDATION)
+    #define MESH_TEST_NOZZLE_SIZE    0.4  // (mm) Diameter of primary nozzle.
+    #define MESH_TEST_LAYER_HEIGHT   0.2  // (mm) Default layer height for the G26 Mesh Validation Tool.
+    #define MESH_TEST_HOTEND_TEMP  205    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
+    #define MESH_TEST_BED_TEMP      60    // (°C) Default bed temperature for the G26 Mesh Validation Tool.
+    #define G26_XY_FEEDRATE         20    // (mm/s) Feedrate for XY Moves for the G26 Mesh Validation Tool.
+    #define G26_RETRACT_MULTIPLIER   1.0  // G26 Q (retraction) used by default between mesh test elements.
+  #endif
+
+#endif
+
+#if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
+
+  // Set the number of grid points per dimension.
+  #define GRID_MAX_POINTS_X 3
+  #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
+
+  // Probe along the Y axis, advancing X after each column
+  //#define PROBE_Y_FIRST
+
+  #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
+
+    // Beyond the probed grid, continue the implied tilt?
+    // Default is to maintain the height of the nearest edge.
+    //#define EXTRAPOLATE_BEYOND_GRID
+
+    //
+    // Experimental Subdivision of the grid by Catmull-Rom method.
+    // Synthesizes intermediate points to produce a more detailed mesh.
+    //
+    //#define ABL_BILINEAR_SUBDIVISION
+    #if ENABLED(ABL_BILINEAR_SUBDIVISION)
+      // Number of subdivisions between probe points
+      #define BILINEAR_SUBDIVISIONS 3
+    #endif
+
+  #endif
+
+#elif ENABLED(AUTO_BED_LEVELING_UBL)
+
+  //===========================================================================
+  //========================= Unified Bed Leveling ============================
+  //===========================================================================
+
+  //#define MESH_EDIT_GFX_OVERLAY   // Display a graphics overlay while editing the mesh
+
+  #define MESH_INSET 1              // Set Mesh bounds as an inset region of the bed
+  #define GRID_MAX_POINTS_X 10      // Don't use more than 15 points per axis, implementation limited.
+  #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
+
+  #define UBL_MESH_EDIT_MOVES_Z     // Sophisticated users prefer no movement of nozzle
+  #define UBL_SAVE_ACTIVE_ON_M500   // Save the currently active mesh in the current slot on M500
+
+  //#define UBL_Z_RAISE_WHEN_OFF_MESH 2.5 // When the nozzle is off the mesh, this value is used
+                                          // as the Z-Height correction value.
+
+#elif ENABLED(MESH_BED_LEVELING)
+
+  //===========================================================================
+  //=================================== Mesh ==================================
+  //===========================================================================
+
+  #define MESH_INSET 10          // Set Mesh bounds as an inset region of the bed
+  #define GRID_MAX_POINTS_X 3    // Don't use more than 7 points per axis, implementation limited.
+  #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
+
+  //#define MESH_G28_REST_ORIGIN // After homing all axes ('G28' or 'G28 XYZ') rest Z at Z_MIN_POS
+
+#endif // BED_LEVELING
+
+/**
+ * Add a bed leveling sub-menu for ABL or MBL.
+ * Include a guided procedure if manual probing is enabled.
+ */
+//#define LCD_BED_LEVELING
+
+#if ENABLED(LCD_BED_LEVELING)
+  #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
+  #define LCD_PROBE_Z_RANGE 4     // (mm) Z Range centered on Z_MIN_POS for LCD Z adjustment
+  //#define MESH_EDIT_MENU        // Add a menu to edit mesh points
+#endif
+
+// Add a menu item to move between bed corners for manual bed adjustment
+//#define LEVEL_BED_CORNERS
+
+#if ENABLED(LEVEL_BED_CORNERS)
+  #define LEVEL_CORNERS_INSET_LFRB { 30, 30, 30, 30 } // (mm) Left, Front, Right, Back insets
+  #define LEVEL_CORNERS_HEIGHT      0.0   // (mm) Z height of nozzle at leveling points
+  #define LEVEL_CORNERS_Z_HOP       4.0   // (mm) Z height of nozzle between leveling points
+  //#define LEVEL_CENTER_TOO              // Move to the center after the last corner
+#endif
+
+/**
+ * Commands to execute at the end of G29 probing.
+ * Useful to retract or move the Z probe out of the way.
+ */
+//#define Z_PROBE_END_SCRIPT "G1 Z10 F12000\nG1 X15 Y330\nG1 Z0.5\nG1 Z10"
 
 // @section homing
 
@@ -876,7 +1054,7 @@
  * you must uncomment the following option or it won't work.
  *
  */
-#define SDSUPPORT
+//#define SDSUPPORT
 
 /**
  * SD CARD: SPI SPEED
@@ -956,7 +1134,6 @@
 //#define PCA9632
 
 // Support for PCA9533 PWM LED driver
-// https://github.com/mikeshub/SailfishRGB_LED
 //#define PCA9533
 
 /**
